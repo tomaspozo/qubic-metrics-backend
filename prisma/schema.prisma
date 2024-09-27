@@ -14,9 +14,9 @@ datasource db {
 }
 
 model GithubRepository {
-  id            String   @id @default(cuid())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String        @id @default(cuid())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   organization  String
   name          String
   description   String?
@@ -28,19 +28,25 @@ model GithubRepository {
   watchersCount Int
   language      String?
   license       String?
+  stats         GithubStats[]
 
   @@unique([organization, name])
   @@index([organization, name])
 }
 
 model GithubStats {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  repository   String
-  totalStars   Int
-  totalForks   Int
-  totalIssues  Int
-  totalPRs     Int
-  totalCommits Int
+  id           String           @id @default(cuid())
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  month        String
+  repositoryId String
+  repository   GithubRepository @relation(fields: [repositoryId], references: [id])
+  commits      Int              @default(0)
+  contributors Int              @default(0)
+  openIssues   Int              @default(0)
+  closedIssues Int              @default(0)
+  branches     Int              @default(0)
+  releases     Int              @default(0)
+
+  @@unique([repositoryId, month])
 }
