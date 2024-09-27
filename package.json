@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "prisma generate && nest build",
-    "build:digitalocean": "pnpm install --production=false && prisma generate && pnpm run build && prisma db push",
+    "build:digitalocean": "pnpm install --production=false && pnpm run build && prisma db push",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
