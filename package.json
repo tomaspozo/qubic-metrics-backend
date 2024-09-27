@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "build:digitalocean": "pnpm install --production=false && prisma generate && pnpm run build && pnpm install --production --frozen-lockfile",
+    "build:digitalocean": "pnpm install --production=false && prisma generate && pnpm run build && prisma db push && pnpm install --production --frozen-lockfile",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
