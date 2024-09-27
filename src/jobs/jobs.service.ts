@@ -56,4 +56,44 @@ export class JobsService {
 
     this.logger.debug('Github repositories finished: ' + repositories.length);
   }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async importGithubRepositoriesStats() {
+    const repositories = await this.prisma.githubRepository.findMany();
+
+    for (const repo of repositories) {
+      this.logger.debug(`Processing repository ${repo.name}`);
+
+      const repositoryName = repo.name;
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+
+      const stats =
+        await this.githubService.getGithubRepositoryMonthToDateStats(
+          repositoryName,
+        );
+
+      await this.prisma.githubStats.upsert({
+        where: {
+          repositoryId_month: {
+            repositoryId: repo.id,
+            month: `${year}-${month}`,
+          },
+        },
+        create: {
+          repositoryId: repo.id,
+          month: `${year}-${month}`,
+          ...stats,
+        },
+        update: {
+          ...stats,
+        },
+      });
+    }
+
+    this.logger.debug(
+      'Github repositories stats finished: ' + repositories.length,
+    );
+  }
 }
