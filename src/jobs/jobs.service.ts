@@ -16,7 +16,7 @@ export class JobsService {
     private githubService: GithubService,
   ) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_NOON)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async importGithubRepositories() {
     const repositories = await this.githubService.getGithubRepositories();
 
