@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model GithubRepository {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  organization  String
+  name          String
+  description   String?
+  githubId      String
+  url           String
+  pushedAt      DateTime
+  size          Int
+  starsCount    Int
+  watchersCount Int
+  language      String?
+  license       String?
+
+  @@unique([organization, name])
+  @@index([organization, name])
+}
+
+model GithubStats {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  repository   String
+  totalStars   Int
+  totalForks   Int
+  totalIssues  Int
+  totalPRs     Int
+  totalCommits Int
+}
