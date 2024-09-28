@@ -6,10 +6,11 @@ import { GithubService } from 'src/github/github.service';
 
 import { StatsController } from './stats.controller';
 import { QubicService } from 'src/qubic/qubic.service';
+import { JobsService } from 'src/jobs/jobs.service';
 
 @Module({
   imports: [HttpModule],
   controllers: [StatsController],
-  providers: [GithubService, QubicService, PrismaService],
+  providers: [PrismaService, GithubService, QubicService, JobsService],
 })
 export class StatsModule {}

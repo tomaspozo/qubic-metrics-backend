@@ -4,7 +4,9 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Post,
 } from '@nestjs/common';
+import { JobsService } from 'src/jobs/jobs.service';
 
 import { PrismaService } from 'src/prisma.service';
 import { QubicService } from 'src/qubic/qubic.service';
@@ -14,6 +16,7 @@ export class StatsController {
   constructor(
     private readonly qubic: QubicService,
     private prisma: PrismaService,
+    private jobs: JobsService,
   ) {}
 
   @Get('qubic')
@@ -21,7 +24,12 @@ export class StatsController {
     return this.prisma.qubicStats.findMany({});
   }
 
-  @Get('')
+  @Post('qubic')
+  async updateQubicStats() {
+    return this.jobs.importQubicStats();
+  }
+
+  @Get('github')
   async listRepositories() {
     const repositories = await this.prisma.githubRepository.findMany({
       take: 1000,
@@ -53,8 +61,20 @@ export class StatsController {
     };
   }
 
+  @Post('github/repositories')
+  async updateGithubRepositories() {
+    return this.jobs.importGithubRepositories();
+  }
+
+  @Post('github/repositories/stats')
+  async updateGithubRepositoriesGithubStats() {
+    return this.jobs.importGithubRepositoriesStats();
+  }
+
   @Get(':repositoryName')
-  async getStats(@Param('repositoryName') repositoryName: string) {
+  async getGithubRepositoryStats(
+    @Param('repositoryName') repositoryName: string,
+  ) {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth() + 1;
