@@ -21,7 +21,30 @@ export class StatsController {
 
   @Get('qubic')
   async getQubicStats() {
-    return this.prisma.qubicStats.findMany({});
+    const stats = await this.prisma.qubicStats.findMany({
+      select: {
+        date: true,
+        timestamp: true,
+        circulatingSupply: true,
+        activeAddresses: true,
+        price: true,
+        marketCap: true,
+        epoch: true,
+        currentTick: true,
+        ticksInCurrentEpoch: true,
+        emptyTicksInCurrentEpoch: true,
+        epochTickQuality: true,
+        burnedQus: true,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    return {
+      data: stats,
+      totalCount: stats.length,
+    };
   }
 
   @Post('qubic')
@@ -30,33 +53,35 @@ export class StatsController {
   }
 
   @Get('github')
-  async listRepositories() {
-    const repositories = await this.prisma.githubRepository.findMany({
+  async getGithubStats() {
+    const repositories = await this.prisma.githubStats.findMany({
       take: 1000,
       select: {
-        id: true,
-        name: true,
+        date: true,
+        commits: true,
+        contributors: true,
+        openIssues: true,
+        closedIssues: true,
+        branches: true,
+        releases: true,
         starsCount: true,
         watchersCount: true,
-        stats: {
+        repository: {
           select: {
-            date: true,
-            commits: true,
-            contributors: true,
-            openIssues: true,
-            closedIssues: true,
-            branches: true,
-            releases: true,
+            name: true,
           },
         },
       },
       orderBy: {
-        starsCount: 'desc',
+        date: 'desc',
       },
     });
 
     return {
-      data: repositories,
+      data: repositories.map(({ repository, ...attributes }) => ({
+        repository: repository.name,
+        ...attributes,
+      })),
       totalCount: repositories.length,
     };
   }
@@ -71,7 +96,7 @@ export class StatsController {
     return this.jobs.importGithubRepositoriesStats();
   }
 
-  @Get(':repositoryName')
+  @Get('github/:repositoryName')
   async getGithubRepositoryStats(
     @Param('repositoryName') repositoryName: string,
   ) {
