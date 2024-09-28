@@ -19,7 +19,7 @@ export class JobsService {
     private qubicService: QubicService,
   ) {}
 
-  @Cron(CronExpression.EVERY_6_HOURS)
+  @Cron(CronExpression.EVERY_4_HOURS)
   async importGithubRepositories() {
     const repositories = await this.githubService.getGithubRepositories();
 
@@ -83,12 +83,16 @@ export class JobsService {
           },
         },
         create: {
+          ...stats,
           repositoryId: repo.id,
           date,
-          ...stats,
+          starsCount: repo.starsCount,
+          watchersCount: repo.watchersCount,
         },
         update: {
           ...stats,
+          starsCount: repo.starsCount,
+          watchersCount: repo.watchersCount,
         },
       });
     }

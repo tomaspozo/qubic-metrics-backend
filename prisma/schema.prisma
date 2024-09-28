@@ -35,18 +35,20 @@ model GithubRepository {
 }
 
 model GithubStats {
-  id           String           @id @default(cuid())
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  date         String
-  repositoryId String
-  repository   GithubRepository @relation(fields: [repositoryId], references: [id])
-  commits      Int              @default(0)
-  contributors Int              @default(0)
-  openIssues   Int              @default(0)
-  closedIssues Int              @default(0)
-  branches     Int              @default(0)
-  releases     Int              @default(0)
+  id            String           @id @default(cuid())
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  date          String
+  repositoryId  String
+  repository    GithubRepository @relation(fields: [repositoryId], references: [id])
+  commits       Int              @default(0)
+  contributors  Int              @default(0)
+  openIssues    Int              @default(0)
+  closedIssues  Int              @default(0)
+  branches      Int              @default(0)
+  releases      Int              @default(0)
+  starsCount    Int              @default(0)
+  watchersCount Int              @default(0)
 
   @@unique([repositoryId, date])
 }
