@@ -50,3 +50,23 @@ model GithubStats {
 
   @@unique([repositoryId, month])
 }
+
+model QubicStats {
+  id                       String   @id @default(cuid())
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  date                     String
+  timestamp                String
+  circulatingSupply        String
+  activeAddresses          Int
+  price                    Float
+  marketCap                String
+  epoch                    Int
+  currentTick              Int
+  ticksInCurrentEpoch      Int
+  emptyTicksInCurrentEpoch Int
+  epochTickQuality         Float
+  burnedQus                String
+
+  @@unique([date])
+}

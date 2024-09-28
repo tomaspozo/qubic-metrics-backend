@@ -6,15 +6,20 @@ import {
   Param,
 } from '@nestjs/common';
 
-import { GithubService } from 'src/github/github.service';
 import { PrismaService } from 'src/prisma.service';
+import { QubicService } from 'src/qubic/qubic.service';
 
 @Controller('stats')
 export class StatsController {
   constructor(
-    private readonly githubService: GithubService,
+    private readonly qubic: QubicService,
     private prisma: PrismaService,
   ) {}
+
+  @Get('qubic')
+  async getQubicStats() {
+    return this.prisma.qubicStats.findMany({});
+  }
 
   @Get('')
   async listRepositories() {

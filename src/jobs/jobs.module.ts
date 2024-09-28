@@ -3,11 +3,12 @@ import { HttpModule } from '@nestjs/axios';
 
 import { PrismaService } from 'src/prisma.service';
 import { GithubService } from 'src/github/github.service';
+import { QubicService } from 'src/qubic/qubic.service';
 
 import { JobsService } from './jobs.service';
 
 @Module({
   imports: [HttpModule],
-  providers: [JobsService, PrismaService, GithubService],
+  providers: [JobsService, PrismaService, GithubService, QubicService],
 })
 export class JobsModule {}

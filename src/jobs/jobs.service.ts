@@ -4,6 +4,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from 'src/prisma.service';
 
 import { GithubService } from 'src/github/github.service';
+import { QubicService } from 'src/qubic/qubic.service';
+import { format } from 'date-fns';
 
 const ORG_NAME = 'qubic';
 
@@ -14,6 +16,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private githubService: GithubService,
+    private qubicService: QubicService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -95,5 +98,26 @@ export class JobsService {
     this.logger.debug(
       'Github repositories stats finished: ' + repositories.length,
     );
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async importQubicStats() {
+    const date = format(new Date(), 'yyyy-MM-dd');
+    const stats = await this.qubicService.getQubicStats();
+
+    await this.prisma.qubicStats.upsert({
+      where: {
+        date,
+      },
+      create: {
+        date,
+        ...stats,
+      },
+      update: {
+        ...stats,
+      },
+    });
+
+    this.logger.debug('Qubic stats sync finished');
   }
 }
