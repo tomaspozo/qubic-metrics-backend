@@ -38,7 +38,7 @@ model GithubStats {
   id           String           @id @default(cuid())
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  month        String
+  date         String
   repositoryId String
   repository   GithubRepository @relation(fields: [repositoryId], references: [id])
   commits      Int              @default(0)
@@ -48,7 +48,7 @@ model GithubStats {
   branches     Int              @default(0)
   releases     Int              @default(0)
 
-  @@unique([repositoryId, month])
+  @@unique([repositoryId, date])
 }
 
 model QubicStats {

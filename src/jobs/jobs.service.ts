@@ -62,15 +62,13 @@ export class JobsService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async importGithubRepositoriesStats() {
+    const date = format(new Date(), 'yyyy-MM-dd');
     const repositories = await this.prisma.githubRepository.findMany();
 
     for (const repo of repositories) {
       this.logger.debug(`Processing repository ${repo.name}`);
 
       const repositoryName = repo.name;
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth() + 1;
 
       const stats =
         await this.githubService.getGithubRepositoryMonthToDateStats(
@@ -79,14 +77,14 @@ export class JobsService {
 
       await this.prisma.githubStats.upsert({
         where: {
-          repositoryId_month: {
+          repositoryId_date: {
             repositoryId: repo.id,
-            month: `${year}-${month}`,
+            date,
           },
         },
         create: {
           repositoryId: repo.id,
-          month: `${year}-${month}`,
+          date,
           ...stats,
         },
         update: {

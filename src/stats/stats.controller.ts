@@ -32,7 +32,7 @@ export class StatsController {
         watchersCount: true,
         stats: {
           select: {
-            month: true,
+            date: true,
             commits: true,
             contributors: true,
             openIssues: true,
