@@ -86,6 +86,43 @@ export class StatsController {
     };
   }
 
+  @Get('github/overview')
+  async getGithubOverviewStats() {
+    const lastRecord = await this.prisma.githubStats.findFirst({
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    const allTimeCommits = await this.prisma.githubStats.aggregate({
+      _sum: {
+        commits: true,
+      },
+    });
+
+    const lastStats = await this.prisma.githubStats.aggregate({
+      _sum: {
+        watchersCount: true,
+        starsCount: true,
+        contributors: true,
+        openIssues: true,
+        closedIssues: true,
+        branches: true,
+        releases: true,
+      },
+      where: {
+        date: lastRecord.date,
+      },
+    });
+
+    return {
+      data: {
+        commits: allTimeCommits._sum.commits,
+        ...lastStats._sum,
+      },
+    };
+  }
+
   @Post('github/repositories')
   async updateGithubRepositories() {
     return this.jobs.importGithubRepositories();
@@ -96,7 +133,7 @@ export class StatsController {
     return this.jobs.importGithubRepositoriesStats();
   }
 
-  @Get('github/:repositoryName')
+  @Get('github/repositories/:repositoryName')
   async getGithubRepositoryStats(
     @Param('repositoryName') repositoryName: string,
   ) {
@@ -119,10 +156,8 @@ export class StatsController {
     });
 
     return {
-      repositoryId: repository.id,
-      repository: repositoryName,
-      month: `${year}-${month}`,
-      ...stats,
+      data: stats,
+      totalCount: stats.length,
     };
   }
 }
