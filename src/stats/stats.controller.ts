@@ -37,12 +37,17 @@ export class StatsController {
         burnedQus: true,
       },
       orderBy: {
-        date: 'desc',
+        date: 'asc',
       },
     });
 
     return {
-      data: stats,
+      data: stats.map((item) => ({
+        ...item,
+        circulatingSupply: parseFloat(item.circulatingSupply),
+        marketCap: parseFloat(item.marketCap),
+        burnedQus: parseFloat(item.burnedQus),
+      })),
       totalCount: stats.length,
     };
   }
@@ -120,6 +125,51 @@ export class StatsController {
         commits: allTimeCommits._sum.commits,
         ...lastStats._sum,
       },
+    };
+  }
+
+  @Get('github/history')
+  async getGithubHistoryStats() {
+    const allTimeCommits = await this.prisma.githubStats.groupBy({
+      by: ['date'],
+      _sum: {
+        commits: true,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    const allTimeStats = await this.prisma.githubStats.groupBy({
+      by: ['date'],
+      _max: {
+        watchersCount: true,
+        starsCount: true,
+        contributors: true,
+        openIssues: true,
+        closedIssues: true,
+        branches: true,
+        releases: true,
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
+    const data = allTimeCommits.map(({ date, _sum: { commits } }) => {
+      const lastStats = allTimeStats.find(
+        ({ date: lastDate }) => lastDate === date,
+      );
+
+      return {
+        date,
+        commits,
+        ...lastStats._max,
+      };
+    });
+
+    return {
+      data,
     };
   }
 
