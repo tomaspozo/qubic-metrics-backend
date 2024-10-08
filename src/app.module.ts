@@ -11,6 +11,8 @@ import { JobsModule } from './jobs/jobs.module';
 import { StatsModule } from './stats/stats.module';
 import { QubicModule } from './qubic/qubic.module';
 import { PrismaService } from './prisma.service';
+import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -29,8 +31,9 @@ import { PrismaService } from './prisma.service';
     JobsModule,
     StatsModule,
     QubicModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [AppService, AuthService, PrismaService],
 })
 export class AppModule {}

@@ -6,13 +6,16 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { JobsService } from 'src/jobs/jobs.service';
 
 import { PrismaService } from 'src/prisma.service';
 import { QubicService } from 'src/qubic/qubic.service';
 
+@UseGuards(AuthGuard)
 @UseInterceptors(CacheInterceptor)
 @Controller('stats')
 export class StatsController {

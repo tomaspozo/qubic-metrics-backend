@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from './prisma.service';
+import { AuthService } from './auth/auth.service';
 
 const endpoints = [
   {
@@ -47,10 +47,7 @@ const endpoints = [
 
 @Injectable()
 export class AppService {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly prismaService: PrismaService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
   getHello(): string {
     return `
     <h1>Hello World!</h1>
@@ -91,27 +88,7 @@ export class AppService {
       `;
   }
 
-  async getApiKey(body: {
-    email: string;
-  }): Promise<{ token: string; createdAt: string }> {
-    const currentToken = await this.prismaService.apiKey.findUnique({
-      where: { email: body.email },
-    });
-
-    if (currentToken) {
-      return {
-        token: currentToken.key,
-        createdAt: currentToken.createdAt.toISOString(),
-      };
-    }
-
-    const payload = { email: body.email };
-    const token = this.jwtService.sign(payload);
-
-    await this.prismaService.apiKey.create({
-      data: { email: body.email, key: token },
-    });
-
-    return { token, createdAt: new Date().toISOString() };
+  async getApiKey(body: { email: string }) {
+    return this.authService.generateToken(body.email);
   }
 }
