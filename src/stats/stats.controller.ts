@@ -1,3 +1,4 @@
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import {
   Controller,
   Get,
@@ -5,12 +6,14 @@ import {
   HttpStatus,
   Param,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JobsService } from 'src/jobs/jobs.service';
 
 import { PrismaService } from 'src/prisma.service';
 import { QubicService } from 'src/qubic/qubic.service';
 
+@UseInterceptors(CacheInterceptor)
 @Controller('stats')
 export class StatsController {
   constructor(

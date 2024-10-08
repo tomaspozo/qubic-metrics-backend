@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,7 +11,18 @@ import { StatsModule } from './stats/stats.module';
 import { QubicModule } from './qubic/qubic.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), GithubModule, JobsModule, StatsModule, QubicModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    CacheModule.register({
+      ttl: 3600,
+      max: 100,
+      isGlobal: true,
+    }),
+    GithubModule,
+    JobsModule,
+    StatsModule,
+    QubicModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
