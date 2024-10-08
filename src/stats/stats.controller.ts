@@ -22,7 +22,7 @@ export class StatsController {
     private jobs: JobsService,
   ) {}
 
-  @Get('qubic')
+  @Get('qubic/history')
   async getQubicStats() {
     const stats = await this.prisma.qubicStats.findMany({
       select: {
