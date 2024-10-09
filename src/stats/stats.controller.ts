@@ -158,7 +158,7 @@ export class StatsController {
         releases: true,
       },
       orderBy: {
-        date: 'desc',
+        date: 'asc',
       },
     });
 
