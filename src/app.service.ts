@@ -67,8 +67,6 @@ export class AppService {
             Path: <code>GET /${endpoint.path}</code>
             <br>
             ${endpoint.description}
-            <br>
-            <a href="/${endpoint.path}">Open</a>
             </li>
         `,
           )
