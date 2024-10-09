@@ -142,7 +142,7 @@ export class StatsController {
         commits: true,
       },
       orderBy: {
-        date: 'desc',
+        date: 'asc',
       },
     });
 
