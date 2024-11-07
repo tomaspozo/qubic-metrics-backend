@@ -81,3 +81,32 @@ model QubicStats {
 
   @@unique([date])
 }
+
+model QubicLIScore {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  score      Int
+  adminScore Int
+  epoch      Int
+  updated    DateTime
+  checked    DateTime
+  identity   String
+  isComputor Boolean
+}
+
+model QubicLIScoreStats {
+  id                         String   @id @default(cuid())
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  date                       String
+  minScore                   Float
+  maxScore                   Float
+  averageScore               Float
+  estimatedIts               Float
+  solutionsPerHour           Float
+  solutionsPerHourCalculated Float
+  difficulty                 Float
+
+  @@unique([date])
+}

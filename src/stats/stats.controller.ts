@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { format } from 'date-fns';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { JobsService } from 'src/jobs/jobs.service';
 
@@ -215,5 +216,57 @@ export class StatsController {
       data: stats,
       totalCount: stats.length,
     };
+  }
+
+  @Post('qubic-li/scores')
+  async getQubicLIScores() {
+    const authData = await this.qubic.getQubicLIToken();
+    const scores = await this.qubic.getQubicLIScoresWithToken(authData);
+    const date = format(new Date(scores.createdAt), 'yyyy-MM-dd');
+
+    await this.prisma.qubicLIScoreStats.upsert({
+      where: {
+        date,
+      },
+      create: {
+        date,
+        minScore: scores.minScore,
+        maxScore: scores.maxScore,
+        averageScore: scores.averageScore,
+        estimatedIts: scores.estimatedIts,
+        solutionsPerHour: scores.solutionsPerHour,
+        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
+        difficulty: scores.difficulty,
+      },
+      update: {
+        minScore: scores.minScore,
+        maxScore: scores.maxScore,
+        averageScore: scores.averageScore,
+        estimatedIts: scores.estimatedIts,
+        solutionsPerHour: scores.solutionsPerHour,
+        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
+        difficulty: scores.difficulty,
+      },
+    });
+
+    for (const score of scores.scores) {
+      await this.prisma.qubicLIScore.upsert({
+        where: {
+          id: score.id,
+        },
+        create: {
+          ...score,
+          updated: new Date(score.updated),
+          checked: new Date(score.checked),
+        },
+        update: {
+          ...score,
+          updated: new Date(score.updated),
+          checked: new Date(score.checked),
+        },
+      });
+    }
+
+    return scores;
   }
 }

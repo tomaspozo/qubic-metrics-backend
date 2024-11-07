@@ -122,4 +122,56 @@ export class JobsService {
 
     this.logger.debug('Qubic stats sync finished');
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async importQubicLIScores() {
+    const authData = await this.qubicService.getQubicLIToken();
+    const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
+    const date = format(new Date(scores.createdAt), 'yyyy-MM-dd');
+
+    await this.prisma.qubicLIScoreStats.upsert({
+      where: {
+        date,
+      },
+      create: {
+        date,
+        minScore: scores.minScore,
+        maxScore: scores.maxScore,
+        averageScore: scores.averageScore,
+        estimatedIts: scores.estimatedIts,
+        solutionsPerHour: scores.solutionsPerHour,
+        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
+        difficulty: scores.difficulty,
+      },
+      update: {
+        minScore: scores.minScore,
+        maxScore: scores.maxScore,
+        averageScore: scores.averageScore,
+        estimatedIts: scores.estimatedIts,
+        solutionsPerHour: scores.solutionsPerHour,
+        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
+        difficulty: scores.difficulty,
+      },
+    });
+
+    for (const score of scores.scores) {
+      await this.prisma.qubicLIScore.upsert({
+        where: {
+          id: score.id,
+        },
+        create: {
+          ...score,
+          updated: new Date(score.updated),
+          checked: new Date(score.checked),
+        },
+        update: {
+          ...score,
+          updated: new Date(score.updated),
+          checked: new Date(score.checked),
+        },
+      });
+    }
+
+    this.logger.debug('Qubic.li scores sync finished');
+  }
 }
