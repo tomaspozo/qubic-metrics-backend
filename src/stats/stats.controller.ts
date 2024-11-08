@@ -67,6 +67,15 @@ export class StatsController {
 
   @Get('qubic/history')
   async getQubicStats(@Query('range') range: Range = 'ALL') {
+    const btcPrice = await this.prisma.cryptoData.findFirst({
+      where: {
+        symbol: 'BTC',
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+
     const stats = await this.prisma.qubicStats.findMany({
       where: {
         date: {
@@ -98,6 +107,8 @@ export class StatsController {
         circulatingSupply: parseFloat(item.circulatingSupply),
         marketCap: parseFloat(item.marketCap),
         burnedQus: parseFloat(item.burnedQus),
+        btcMarketCap: parseFloat(item.marketCap) / btcPrice.price,
+        btcPrice: item.price * btcPrice.price,
       })),
       totalCount: stats.length,
     };
