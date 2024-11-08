@@ -13,6 +13,7 @@ import { QubicModule } from './qubic/qubic.module';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/auth.service';
+import { CoinmarketModule } from './coinmarket/coinmarket.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AuthService } from './auth/auth.service';
     StatsModule,
     QubicModule,
     AuthModule,
+    CoinmarketModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService, PrismaService],

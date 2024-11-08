@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { format } from 'date-fns';
 
 import { PrismaService } from 'src/prisma.service';
 
 import { GithubService } from 'src/github/github.service';
 import { QubicService } from 'src/qubic/qubic.service';
-import { format } from 'date-fns';
+import { CoinmarketService } from 'src/coinmarket/coinmarket.service';
 
 const ORG_NAME = 'qubic';
 
@@ -17,6 +18,7 @@ export class JobsService {
     private prisma: PrismaService,
     private githubService: GithubService,
     private qubicService: QubicService,
+    private coinmarketService: CoinmarketService,
   ) {}
 
   @Cron(CronExpression.EVERY_4_HOURS)
@@ -173,5 +175,40 @@ export class JobsService {
     }
 
     this.logger.debug('Qubic.li scores sync finished');
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async importCryptoData() {
+    const symbol = 'BTC';
+    const slug = 'bitcoin';
+
+    const data = await this.coinmarketService.getCryptoData(slug);
+    const date = format(new Date(data.last_updated), 'yyyy-MM-dd');
+
+    await this.prisma.cryptoData.upsert({
+      where: {
+        symbol_date: {
+          symbol,
+          date,
+        },
+      },
+      create: {
+        date,
+        symbol,
+        name: data.name,
+        price: data.quote.USD.price,
+        volume: data.quote.USD.volume_24h,
+        marketCap: data.quote.USD.market_cap,
+        metadata: JSON.parse(JSON.stringify(data)),
+      },
+      update: {
+        price: data.quote.USD.price,
+        volume: data.quote.USD.volume_24h,
+        marketCap: data.quote.USD.market_cap,
+        metadata: JSON.parse(JSON.stringify(data)),
+      },
+    });
+
+    this.logger.debug('Crypto data sync finished');
   }
 }

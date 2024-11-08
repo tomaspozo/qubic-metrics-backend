@@ -220,53 +220,19 @@ export class StatsController {
 
   @Post('qubic-li/scores')
   async getQubicLIScores() {
-    const authData = await this.qubic.getQubicLIToken();
-    const scores = await this.qubic.getQubicLIScoresWithToken(authData);
-    const date = format(new Date(scores.createdAt), 'yyyy-MM-dd');
+    await this.jobs.importQubicLIScores();
 
-    await this.prisma.qubicLIScoreStats.upsert({
-      where: {
-        date,
-      },
-      create: {
-        date,
-        minScore: scores.minScore,
-        maxScore: scores.maxScore,
-        averageScore: scores.averageScore,
-        estimatedIts: scores.estimatedIts,
-        solutionsPerHour: scores.solutionsPerHour,
-        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
-        difficulty: scores.difficulty,
-      },
-      update: {
-        minScore: scores.minScore,
-        maxScore: scores.maxScore,
-        averageScore: scores.averageScore,
-        estimatedIts: scores.estimatedIts,
-        solutionsPerHour: scores.solutionsPerHour,
-        solutionsPerHourCalculated: scores.solutionsPerHourCalculated,
-        difficulty: scores.difficulty,
-      },
-    });
+    return {
+      message: 'Qubic LI scores updated',
+    };
+  }
 
-    for (const score of scores.scores) {
-      await this.prisma.qubicLIScore.upsert({
-        where: {
-          id: score.id,
-        },
-        create: {
-          ...score,
-          updated: new Date(score.updated),
-          checked: new Date(score.checked),
-        },
-        update: {
-          ...score,
-          updated: new Date(score.updated),
-          checked: new Date(score.checked),
-        },
-      });
-    }
+  @Post('crypto')
+  async updateCryptoData() {
+    await this.jobs.importCryptoData();
 
-    return scores;
+    return {
+      message: 'Crypto data updated',
+    };
   }
 }

@@ -110,3 +110,18 @@ model QubicLIScoreStats {
 
   @@unique([date])
 }
+
+model CryptoData {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  date      String
+  symbol    String
+  name      String
+  price     Float
+  volume    Float
+  marketCap Float
+  metadata  Json
+
+  @@unique([symbol, date])
+}
