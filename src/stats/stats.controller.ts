@@ -6,15 +6,54 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { format } from 'date-fns';
+import { format, subDays, subYears } from 'date-fns';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { JobsService } from 'src/jobs/jobs.service';
 
 import { PrismaService } from 'src/prisma.service';
 import { QubicService } from 'src/qubic/qubic.service';
+
+type Range = 'ALL' | '7D' | '30D' | '3M' | '1Y';
+
+function getDatesInRange(range: Range) {
+  const today = new Date();
+  const dates: string[] = [];
+  let startDate: Date;
+
+  switch (range) {
+    case '7D':
+      startDate = subDays(today, 7);
+      break;
+    case '30D':
+      startDate = subDays(today, 30);
+      break;
+    case '3M':
+      startDate = subDays(today, 90);
+      break;
+    case '1Y':
+      startDate = subYears(today, 1);
+      break;
+    case 'ALL':
+      startDate = new Date('2024-01-01'); // Adjust this date as needed
+      break;
+    default:
+      return [];
+  }
+
+  for (
+    let date = startDate;
+    date <= today;
+    date = new Date(date.setDate(date.getDate() + 1))
+  ) {
+    dates.push(format(date, 'yyyy-MM-dd'));
+  }
+
+  return dates;
+}
 
 @UseGuards(AuthGuard)
 @UseInterceptors(CacheInterceptor)
@@ -27,8 +66,13 @@ export class StatsController {
   ) {}
 
   @Get('qubic/history')
-  async getQubicStats() {
+  async getQubicStats(@Query('range') range: Range = 'ALL') {
     const stats = await this.prisma.qubicStats.findMany({
+      where: {
+        date: {
+          in: getDatesInRange(range),
+        },
+      },
       select: {
         date: true,
         timestamp: true,
@@ -59,14 +103,14 @@ export class StatsController {
     };
   }
 
-  @Post('qubic')
-  async updateQubicStats() {
-    return this.jobs.importQubicStats();
-  }
-
   @Get('github')
-  async getGithubStats() {
+  async getGithubStats(@Query('range') range: Range = 'ALL') {
     const repositories = await this.prisma.githubStats.findMany({
+      where: {
+        date: {
+          in: getDatesInRange(range),
+        },
+      },
       take: 1000,
       select: {
         date: true,
@@ -99,8 +143,13 @@ export class StatsController {
   }
 
   @Get('github/overview')
-  async getGithubOverviewStats() {
+  async getGithubOverviewStats(@Query('range') range: Range = 'ALL') {
     const lastRecord = await this.prisma.githubStats.findFirst({
+      where: {
+        date: {
+          in: getDatesInRange(range),
+        },
+      },
       orderBy: {
         date: 'desc',
       },
@@ -136,9 +185,14 @@ export class StatsController {
   }
 
   @Get('github/history')
-  async getGithubHistoryStats() {
+  async getGithubHistoryStats(@Query('range') range: Range = 'ALL') {
     const allTimeCommits = await this.prisma.githubStats.groupBy({
       by: ['date'],
+      where: {
+        date: {
+          in: getDatesInRange(range),
+        },
+      },
       _sum: {
         commits: true,
       },
@@ -180,16 +234,6 @@ export class StatsController {
     };
   }
 
-  @Post('github/repositories')
-  async updateGithubRepositories() {
-    return this.jobs.importGithubRepositories();
-  }
-
-  @Post('github/repositories/stats')
-  async updateGithubRepositoriesGithubStats() {
-    return this.jobs.importGithubRepositoriesStats();
-  }
-
   @Get('github/repositories/:repositoryName')
   async getGithubRepositoryStats(
     @Param('repositoryName') repositoryName: string,
@@ -216,6 +260,21 @@ export class StatsController {
       data: stats,
       totalCount: stats.length,
     };
+  }
+
+  @Post('github/repositories')
+  async updateGithubRepositories() {
+    return this.jobs.importGithubRepositories();
+  }
+
+  @Post('github/repositories/stats')
+  async updateGithubRepositoriesGithubStats() {
+    return this.jobs.importGithubRepositoriesStats();
+  }
+
+  @Post('qubic')
+  async updateQubicStats() {
+    return this.jobs.importQubicStats();
   }
 
   @Post('qubic-li/scores')
