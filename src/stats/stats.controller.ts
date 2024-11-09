@@ -67,42 +67,43 @@ export class StatsController {
 
   @Get('qubic/history')
   async getQubicStats(@Query('range') range: Range = 'ALL') {
-    const btcPrices = await this.prisma.cryptoData.findMany({
-      where: {
-        symbol: 'BTC',
-        date: {
-          in: getDatesInRange(range),
+    const [btcPrices, stats] = await Promise.all([
+      this.prisma.cryptoData.findMany({
+        where: {
+          symbol: 'BTC',
+          date: {
+            in: getDatesInRange(range),
+          },
         },
-      },
-      orderBy: {
-        date: 'asc',
-      },
-    });
-
-    const stats = await this.prisma.qubicStats.findMany({
-      where: {
-        date: {
-          in: getDatesInRange(range),
+        orderBy: {
+          date: 'asc',
         },
-      },
-      select: {
-        date: true,
-        timestamp: true,
-        circulatingSupply: true,
-        activeAddresses: true,
-        price: true,
-        marketCap: true,
-        epoch: true,
-        currentTick: true,
-        ticksInCurrentEpoch: true,
-        emptyTicksInCurrentEpoch: true,
-        epochTickQuality: true,
-        burnedQus: true,
-      },
-      orderBy: {
-        date: 'asc',
-      },
-    });
+      }),
+      this.prisma.qubicStats.findMany({
+        where: {
+          date: {
+            in: getDatesInRange(range),
+          },
+        },
+        select: {
+          date: true,
+          timestamp: true,
+          circulatingSupply: true,
+          activeAddresses: true,
+          price: true,
+          marketCap: true,
+          epoch: true,
+          currentTick: true,
+          ticksInCurrentEpoch: true,
+          emptyTicksInCurrentEpoch: true,
+          epochTickQuality: true,
+          burnedQus: true,
+        },
+        orderBy: {
+          date: 'asc',
+        },
+      }),
+    ]);
 
     return {
       data: stats.map((item) => {
