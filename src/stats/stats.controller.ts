@@ -273,6 +273,22 @@ export class StatsController {
     };
   }
 
+  @Get('qubic-li/scores')
+  async getQubicLIScores(@Query('range') range: Range = 'ALL') {
+    const data = await this.prisma.qubicLIScoreStats.findMany({
+      where: {
+        date: {
+          in: getDatesInRange(range),
+        },
+      },
+    });
+
+    return {
+      data,
+      totalCount: data.length,
+    };
+  }
+
   @Post('github/repositories')
   async updateGithubRepositories() {
     return this.jobs.importGithubRepositories();
@@ -289,7 +305,7 @@ export class StatsController {
   }
 
   @Post('qubic-li/scores')
-  async getQubicLIScores() {
+  async updateQubicLIScores() {
     await this.jobs.importQubicLIScores();
 
     return {
