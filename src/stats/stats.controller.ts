@@ -10,7 +10,15 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { format, subDays, subYears } from 'date-fns';
+import {
+  format,
+  getHours,
+  getMinutes,
+  getWeek,
+  getYear,
+  subDays,
+  subYears,
+} from 'date-fns';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { JobsService } from 'src/jobs/jobs.service';
 
@@ -299,6 +307,75 @@ export class StatsController {
     };
   }
 
+  @Get('qubic-li/scores/:type')
+  async getQubicLIScoresDaily(
+    @Query('range') range: Range = 'ALL',
+    @Param('type') type: 'daily' | 'weekly' | 'hourly' = 'daily',
+  ) {
+    const data = await this.prisma.qubicLIScore.groupBy({
+      by: [
+        type === 'daily'
+          ? 'dayString'
+          : type === 'weekly'
+            ? 'weekString'
+            : 'hourString',
+      ],
+      where: {
+        checked: {
+          gte: new Date(getDatesInRange(range)[0]),
+          lte: new Date(
+            getDatesInRange(range)[getDatesInRange(range).length - 1],
+          ),
+        },
+      },
+      _count: {
+        id: true,
+      },
+      _sum: {
+        adminScore: true,
+      },
+      _max: {
+        adminScore: true,
+      },
+      _min: {
+        adminScore: true,
+      },
+      _avg: {
+        adminScore: true,
+      },
+    });
+
+    return {
+      data: data
+        .map(
+          ({
+            weekString,
+            dayString,
+            hourString,
+            _count,
+            _sum,
+            _max,
+            _min,
+            _avg,
+          }) => ({
+            date:
+              type === 'daily'
+                ? dayString
+                : type === 'weekly'
+                  ? weekString
+                  : hourString,
+            count: _count.id,
+            sum: _sum.adminScore,
+            max: _max.adminScore,
+            min: _min.adminScore,
+            avg: _avg.adminScore,
+          }),
+        )
+        .sort((a, b) => (a.date < b.date ? -1 : 1)),
+      totalCount: data.length,
+    };
+  }
+
   @Post('github/repositories')
   async updateGithubRepositories() {
     return this.jobs.importGithubRepositories();
@@ -323,8 +400,42 @@ export class StatsController {
     };
   }
 
+  @Post('qubic-li/scores/weeks')
+  async setQubicLIScoresWeeks() {
+    const data = await this.prisma.qubicLIScore.findMany();
+
+    for (const score of data) {
+      const dayString = format(new Date(score.checked), 'yyyy-MM-dd');
+      const weekString = format(new Date(score.checked), 'yyyy-II');
+      const hourString = format(new Date(score.checked), 'yyyy-MM-dd HH:00');
+      const yearNumber = getYear(new Date(score.checked));
+      const hourNumber = getHours(new Date(score.checked));
+      const minuteNumber = getMinutes(new Date(score.checked));
+      const weekNumber = getWeek(new Date(score.checked));
+
+      await this.prisma.qubicLIScore.update({
+        where: {
+          id: score.id,
+        },
+        data: {
+          dayString,
+          weekString,
+          hourString,
+          yearNumber,
+          hourNumber,
+          minuteNumber,
+          weekNumber,
+        },
+      });
+    }
+
+    return {
+      totalCount: data.length,
+    };
+  }
+
   @Post('crypto')
-  async updateCryptoData() {
+  async importCryptoData() {
     await this.jobs.importCryptoData();
 
     return {

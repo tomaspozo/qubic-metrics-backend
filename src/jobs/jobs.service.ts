@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { format } from 'date-fns';
+import { format, getHours, getMinutes, getWeek, getYear } from 'date-fns';
 
 import { PrismaService } from 'src/prisma.service';
 
@@ -104,7 +104,7 @@ export class JobsService {
     );
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async importQubicStats() {
     const date = format(new Date(), 'yyyy-MM-dd');
     const stats = await this.qubicService.getQubicStats();
@@ -125,11 +125,20 @@ export class JobsService {
     this.logger.debug('Qubic stats sync finished');
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron('50 11 * * *')
   async importQubicLIScores() {
     const authData = await this.qubicService.getQubicLIToken();
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
-    const date = format(new Date(scores.createdAt), 'yyyy-MM-dd');
+    const date = scores.createdAt;
+
+    const dayString = format(new Date(scores.createdAt), 'yyyy-MM-dd');
+    const weekString = format(new Date(scores.createdAt), 'yyyy-II');
+    const hourString = format(new Date(scores.createdAt), 'yyyy-MM-dd HH:00');
+
+    const yearNumber = getYear(new Date(scores.createdAt));
+    const weekNumber = getWeek(new Date(scores.createdAt));
+    const hourNumber = getHours(new Date(scores.createdAt));
+    const minuteNumber = getMinutes(new Date(scores.createdAt));
 
     await this.prisma.qubicLIScoreStats.upsert({
       where: {
@@ -137,6 +146,13 @@ export class JobsService {
       },
       create: {
         date,
+        dayString,
+        weekString,
+        hourString,
+        yearNumber,
+        weekNumber,
+        hourNumber,
+        minuteNumber,
         minScore: scores.minScore,
         maxScore: scores.maxScore,
         averageScore: scores.averageScore,
@@ -157,17 +173,40 @@ export class JobsService {
     });
 
     for (const score of scores.scores) {
+      const dayString = format(new Date(score.checked), 'yyyy-MM-dd');
+      const weekString = format(new Date(score.checked), 'yyyy-II');
+      const hourString = format(new Date(score.checked), 'yyyy-MM-dd HH:00');
+
+      const yearNumber = getYear(new Date(score.checked));
+      const hourNumber = getHours(new Date(score.checked));
+      const minuteNumber = getMinutes(new Date(score.checked));
+      const weekNumber = getWeek(new Date(score.checked));
+
       await this.prisma.qubicLIScore.upsert({
         where: {
           id: score.id,
         },
         create: {
           ...score,
+          dayString,
+          weekString,
+          hourString,
+          yearNumber,
+          weekNumber,
+          hourNumber,
+          minuteNumber,
           updated: new Date(score.updated),
           checked: new Date(score.checked),
         },
         update: {
           ...score,
+          dayString,
+          weekString,
+          hourString,
+          yearNumber,
+          weekNumber,
+          hourNumber,
+          minuteNumber,
           updated: new Date(score.updated),
           checked: new Date(score.checked),
         },
@@ -177,7 +216,7 @@ export class JobsService {
     this.logger.debug('Qubic.li scores sync finished');
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron('50 11 * * *')
   async importCryptoData() {
     const symbol = 'BTC';
     const slug = 'bitcoin';

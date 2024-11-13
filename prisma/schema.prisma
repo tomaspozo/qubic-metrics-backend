@@ -83,16 +83,23 @@ model QubicStats {
 }
 
 model QubicLIScore {
-  id         String   @id @default(cuid())
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  score      Int
-  adminScore Int
-  epoch      Int
-  updated    DateTime
-  checked    DateTime
-  identity   String
-  isComputor Boolean
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  weekString   String   @default("")
+  dayString    String   @default("")
+  hourString   String   @default("")
+  yearNumber   Int      @default(0)
+  weekNumber   Int      @default(0)
+  hourNumber   Int      @default(0)
+  minuteNumber Int      @default(0)
+  score        Int
+  adminScore   Int
+  epoch        Int
+  updated      DateTime
+  checked      DateTime
+  identity     String
+  isComputor   Boolean
 }
 
 model QubicLIScoreStats {
@@ -100,6 +107,13 @@ model QubicLIScoreStats {
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
   date                       String
+  weekString                 String   @default("")
+  dayString                  String   @default("")
+  hourString                 String   @default("")
+  yearNumber                 Int
+  weekNumber                 Int
+  hourNumber                 Int
+  minuteNumber               Int
   minScore                   Float
   maxScore                   Float
   averageScore               Float
