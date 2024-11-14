@@ -125,8 +125,8 @@ export class JobsService {
     this.logger.debug('Qubic stats sync finished');
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async importQubicLIScores() {
+  @Cron('55 11 * * *')
+  async importQubicLIScoresStats() {
     const authData = await this.qubicService.getQubicLIToken();
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
     const date = scores.createdAt;
@@ -171,6 +171,14 @@ export class JobsService {
         difficulty: scores.difficulty,
       },
     });
+
+    this.logger.debug('Qubic.li scores stats sync finished');
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async importQubicLIScores() {
+    const authData = await this.qubicService.getQubicLIToken();
+    const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
 
     for (const score of scores.scores) {
       const dayString = format(new Date(score.checked), 'yyyy-MM-dd');
