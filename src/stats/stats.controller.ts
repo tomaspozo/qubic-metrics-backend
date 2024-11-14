@@ -346,7 +346,7 @@ export class StatsController {
   @Get('qubic-li/scores/:type')
   async getQubicLIScoresDaily(
     @Query('range') range: Range = 'ALL',
-    @Param('type') type: 'daily' | 'weekly' | 'hourly' = 'weekly',
+    @Param('type') type: 'daily' | 'weekly' | 'hourly' | '5min' = 'weekly',
   ) {
     const data = await this.prisma.qubicLIScore.groupBy({
       by: [
@@ -354,7 +354,9 @@ export class StatsController {
           ? 'dayString'
           : type === 'weekly'
             ? 'weekString'
-            : 'hourString',
+            : type === 'hourly'
+              ? 'hourString'
+              : 'time5minIntervalString',
       ],
       where: {
         checked: {
@@ -388,6 +390,7 @@ export class StatsController {
             weekString,
             dayString,
             hourString,
+            time5minIntervalString,
             _count,
             _sum,
             _max,
@@ -399,7 +402,9 @@ export class StatsController {
                 ? dayString
                 : type === 'weekly'
                   ? weekString
-                  : hourString,
+                  : type === 'hourly'
+                    ? hourString
+                    : time5minIntervalString,
             count: _count.id,
             sum: _sum.adminScore,
             max: _max.adminScore,
@@ -445,7 +450,7 @@ export class StatsController {
       const dayString = format(date, 'yyyy-MM-dd');
       const weekString = format(date, 'yyyy-II');
       const hourString = format(date, 'yyyy-MM-dd HH:00');
-      const time5minIntervalString = getTimeIntervalString(date);
+      const time5minIntervalString = `${dayString} ${getTimeIntervalString(date)}`;
 
       const yearNumber = getYear(date);
       const hourNumber = getHours(date);

@@ -186,7 +186,7 @@ export class JobsService {
       const dayString = format(date, 'yyyy-MM-dd');
       const weekString = format(date, 'yyyy-II');
       const hourString = format(date, 'yyyy-MM-dd HH:00');
-      const time5minIntervalString = getTimeIntervalString(date);
+      const time5minIntervalString = `${dayString} ${getTimeIntervalString(date)}`;
 
       const yearNumber = getYear(date);
       const hourNumber = getHours(date);
