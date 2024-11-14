@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma.service';
 import { GithubService } from 'src/github/github.service';
 import { QubicService } from 'src/qubic/qubic.service';
 import { CoinmarketService } from 'src/coinmarket/coinmarket.service';
+import { getTimeIntervalString } from 'src/utils/time';
 
 const ORG_NAME = 'qubic';
 
@@ -181,14 +182,16 @@ export class JobsService {
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
 
     for (const score of scores.scores) {
-      const dayString = format(new Date(score.checked), 'yyyy-MM-dd');
-      const weekString = format(new Date(score.checked), 'yyyy-II');
-      const hourString = format(new Date(score.checked), 'yyyy-MM-dd HH:00');
+      const date = new Date(score.checked);
+      const dayString = format(date, 'yyyy-MM-dd');
+      const weekString = format(date, 'yyyy-II');
+      const hourString = format(date, 'yyyy-MM-dd HH:00');
+      const time5minIntervalString = getTimeIntervalString(date);
 
-      const yearNumber = getYear(new Date(score.checked));
-      const hourNumber = getHours(new Date(score.checked));
-      const minuteNumber = getMinutes(new Date(score.checked));
-      const weekNumber = getWeek(new Date(score.checked));
+      const yearNumber = getYear(date);
+      const hourNumber = getHours(date);
+      const minuteNumber = getMinutes(date);
+      const weekNumber = getWeek(date);
 
       await this.prisma.qubicLIScore.upsert({
         where: {
@@ -199,6 +202,7 @@ export class JobsService {
           dayString,
           weekString,
           hourString,
+          time5minIntervalString,
           yearNumber,
           weekNumber,
           hourNumber,
@@ -212,6 +216,7 @@ export class JobsService {
           weekString,
           hourString,
           yearNumber,
+          time5minIntervalString,
           weekNumber,
           hourNumber,
           minuteNumber,

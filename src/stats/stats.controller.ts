@@ -24,6 +24,7 @@ import { JobsService } from 'src/jobs/jobs.service';
 
 import { PrismaService } from 'src/prisma.service';
 import { QubicService } from 'src/qubic/qubic.service';
+import { getTimeIntervalString } from 'src/utils/time';
 
 type Range = 'ALL' | '7D' | '30D' | '3M' | '1Y';
 
@@ -440,13 +441,16 @@ export class StatsController {
     const data = await this.prisma.qubicLIScore.findMany();
 
     for (const score of data) {
-      const dayString = format(new Date(score.checked), 'yyyy-MM-dd');
-      const weekString = format(new Date(score.checked), 'yyyy-II');
-      const hourString = format(new Date(score.checked), 'yyyy-MM-dd HH:00');
-      const yearNumber = getYear(new Date(score.checked));
-      const hourNumber = getHours(new Date(score.checked));
-      const minuteNumber = getMinutes(new Date(score.checked));
-      const weekNumber = getWeek(new Date(score.checked));
+      const date = new Date(score.checked);
+      const dayString = format(date, 'yyyy-MM-dd');
+      const weekString = format(date, 'yyyy-II');
+      const hourString = format(date, 'yyyy-MM-dd HH:00');
+      const time5minIntervalString = getTimeIntervalString(date);
+
+      const yearNumber = getYear(date);
+      const hourNumber = getHours(date);
+      const minuteNumber = getMinutes(date);
+      const weekNumber = getWeek(date);
 
       await this.prisma.qubicLIScore.update({
         where: {
@@ -460,6 +464,7 @@ export class StatsController {
           hourNumber,
           minuteNumber,
           weekNumber,
+          time5minIntervalString,
         },
       });
     }
