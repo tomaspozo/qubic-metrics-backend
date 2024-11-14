@@ -358,14 +358,17 @@ export class StatsController {
               ? 'hourString'
               : 'time5minIntervalString',
       ],
-      where: {
-        checked: {
-          gte: new Date(getDatesInRange(range)[0]),
-          lte: new Date(
-            getDatesInRange(range)[getDatesInRange(range).length - 1],
-          ),
-        },
-      },
+      where:
+        range === 'ALL'
+          ? {}
+          : {
+              updated: {
+                gte: new Date(getDatesInRange(range)[0]),
+                lte: new Date(
+                  getDatesInRange(range)[getDatesInRange(range).length - 1],
+                ),
+              },
+            },
       _count: {
         id: true,
       },
