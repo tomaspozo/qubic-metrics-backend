@@ -292,17 +292,52 @@ export class StatsController {
   }
 
   @Get('qubic-li/scores')
-  async getQubicLIScores(@Query('range') range: Range = 'ALL') {
-    const data = await this.prisma.qubicLIScoreStats.findMany({
-      where: {
-        date: {
-          in: getDatesInRange(range),
-        },
+  async getQubicLIScores(
+    @Query('range') range: Range = 'ALL',
+    @Query('timelineBy') timelineBy: 'daily' | 'weekly' | 'hourly' = 'weekly',
+  ) {
+    const data = await this.prisma.qubicLIScoreStats.groupBy({
+      by: [
+        timelineBy === 'daily'
+          ? 'dayString'
+          : timelineBy === 'weekly'
+            ? 'weekString'
+            : 'hourString',
+      ],
+      where:
+        range === 'ALL'
+          ? {}
+          : {
+              date: {
+                in: getDatesInRange(range),
+              },
+            },
+      _max: {
+        maxScore: true,
+        averageScore: true,
+        solutionsPerHour: true,
+        solutionsPerHourCalculated: true,
+        difficulty: true,
+      },
+      _min: {
+        minScore: true,
       },
     });
 
     return {
-      data,
+      data: data.map(({ weekString, dayString, hourString, _max, _min }) => ({
+        ..._max,
+        min: _min.minScore,
+        weekString,
+        dayString,
+        hourString,
+        date:
+          timelineBy === 'daily'
+            ? dayString
+            : timelineBy === 'weekly'
+              ? weekString
+              : hourString,
+      })),
       totalCount: data.length,
     };
   }
@@ -310,7 +345,7 @@ export class StatsController {
   @Get('qubic-li/scores/:type')
   async getQubicLIScoresDaily(
     @Query('range') range: Range = 'ALL',
-    @Param('type') type: 'daily' | 'weekly' | 'hourly' = 'daily',
+    @Param('type') type: 'daily' | 'weekly' | 'hourly' = 'weekly',
   ) {
     const data = await this.prisma.qubicLIScore.groupBy({
       by: [
@@ -414,6 +449,41 @@ export class StatsController {
       const weekNumber = getWeek(new Date(score.checked));
 
       await this.prisma.qubicLIScore.update({
+        where: {
+          id: score.id,
+        },
+        data: {
+          dayString,
+          weekString,
+          hourString,
+          yearNumber,
+          hourNumber,
+          minuteNumber,
+          weekNumber,
+        },
+      });
+    }
+
+    return {
+      totalCount: data.length,
+    };
+  }
+
+  @Post('qubic-li/scores/stats/weeks')
+  async setQubicLIScoresStatsWeeks() {
+    const data = await this.prisma.qubicLIScoreStats.findMany();
+
+    for (const score of data) {
+      const date = new Date(score.date);
+      const dayString = format(date, 'yyyy-MM-dd');
+      const weekString = format(date, 'yyyy-II');
+      const hourString = format(date, 'yyyy-MM-dd HH:00');
+      const yearNumber = getYear(date);
+      const hourNumber = getHours(date);
+      const minuteNumber = getMinutes(date);
+      const weekNumber = getWeek(date);
+
+      await this.prisma.qubicLIScoreStats.update({
         where: {
           id: score.id,
         },
