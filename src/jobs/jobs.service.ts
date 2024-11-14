@@ -182,7 +182,7 @@ export class JobsService {
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
 
     for (const score of scores.scores) {
-      const date = new Date(score.updated);
+      const date = new Date(score.checked);
       const dayString = format(date, 'yyyy-MM-dd');
       const weekString = format(date, 'yyyy-II');
       const hourString = format(date, 'yyyy-MM-dd HH:00');
@@ -207,7 +207,7 @@ export class JobsService {
           weekNumber,
           hourNumber,
           minuteNumber,
-          updated: new Date(score.updated),
+          updated: new Date(score.checked),
           checked: new Date(score.checked),
         },
         update: {
@@ -220,7 +220,7 @@ export class JobsService {
           weekNumber,
           hourNumber,
           minuteNumber,
-          updated: new Date(score.updated),
+          updated: new Date(score.checked),
           checked: new Date(score.checked),
         },
       });

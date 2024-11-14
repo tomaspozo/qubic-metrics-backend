@@ -449,7 +449,7 @@ export class StatsController {
     const data = await this.prisma.qubicLIScore.findMany();
 
     for (const score of data) {
-      const date = new Date(score.updated);
+      const date = new Date(score.checked);
       const dayString = format(date, 'yyyy-MM-dd');
       const weekString = format(date, 'yyyy-II');
       const hourString = format(date, 'yyyy-MM-dd HH:00');
