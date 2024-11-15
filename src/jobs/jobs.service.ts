@@ -207,7 +207,7 @@ export class JobsService {
           weekNumber,
           hourNumber,
           minuteNumber,
-          updated: new Date(score.checked),
+          updated: new Date(score.updated),
           checked: new Date(score.checked),
         },
         update: {
@@ -220,7 +220,7 @@ export class JobsService {
           weekNumber,
           hourNumber,
           minuteNumber,
-          updated: new Date(score.checked),
+          updated: new Date(score.updated),
           checked: new Date(score.checked),
         },
       });
