@@ -292,8 +292,8 @@ export class StatsController {
     };
   }
 
-  @Get('qubic-li/scores')
-  async getQubicLIScores(
+  @Get('qubic-li/stats')
+  async getQubicLIScoresStats(
     @Query('range') range: Range = 'ALL',
     @Query('timelineBy') timelineBy: 'daily' | 'weekly' | 'hourly' = 'weekly',
   ) {
@@ -326,35 +326,38 @@ export class StatsController {
     });
 
     return {
-      data: data.map(({ weekString, dayString, hourString, _max, _min }) => ({
-        ..._max,
-        min: _min.minScore,
-        weekString,
-        dayString,
-        hourString,
-        date:
-          timelineBy === 'daily'
-            ? dayString
-            : timelineBy === 'weekly'
-              ? weekString
-              : hourString,
-      })),
+      data: data
+        .map(({ weekString, dayString, hourString, _max, _min }) => ({
+          ..._max,
+          min: _min.minScore,
+          weekString,
+          dayString,
+          hourString,
+          date:
+            timelineBy === 'daily'
+              ? dayString
+              : timelineBy === 'weekly'
+                ? weekString
+                : hourString,
+        }))
+        .sort((a, b) => (a.date < b.date ? -1 : 1)),
       totalCount: data.length,
     };
   }
 
-  @Get('qubic-li/scores/:type')
+  @Get('qubic-li/scores')
   async getQubicLIScoresDaily(
     @Query('range') range: Range = 'ALL',
-    @Param('type') type: 'daily' | 'weekly' | 'hourly' | '5min' = 'weekly',
+    @Query('timelineBy')
+    timelineBy: 'daily' | 'weekly' | 'hourly' | '5min' = 'weekly',
   ) {
     const data = await this.prisma.qubicLIScore.groupBy({
       by: [
-        type === 'daily'
+        timelineBy === 'daily'
           ? 'dayString'
-          : type === 'weekly'
+          : timelineBy === 'weekly'
             ? 'weekString'
-            : type === 'hourly'
+            : timelineBy === 'hourly'
               ? 'hourString'
               : 'time5minIntervalString',
       ],
@@ -401,11 +404,11 @@ export class StatsController {
             _avg,
           }) => ({
             date:
-              type === 'daily'
+              timelineBy === 'daily'
                 ? dayString
-                : type === 'weekly'
+                : timelineBy === 'weekly'
                   ? weekString
-                  : type === 'hourly'
+                  : timelineBy === 'hourly'
                     ? hourString
                     : time5minIntervalString,
             count: _count.id,
