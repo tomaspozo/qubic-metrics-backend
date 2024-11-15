@@ -446,7 +446,11 @@ export class StatsController {
 
   @Post('qubic-li/scores/weeks')
   async setQubicLIScoresWeeks() {
-    const data = await this.prisma.qubicLIScore.findMany();
+    const data = await this.prisma.qubicLIScore.findMany({
+      orderBy: {
+        checked: 'asc',
+      },
+    });
 
     for (const score of data) {
       const date = new Date(score.checked);
