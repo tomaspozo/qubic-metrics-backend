@@ -126,7 +126,7 @@ export class JobsService {
     this.logger.debug('Qubic stats sync finished');
   }
 
-  @Cron('55 11 * * *')
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async importQubicLIScoresStats() {
     const authData = await this.qubicService.getQubicLIToken();
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
