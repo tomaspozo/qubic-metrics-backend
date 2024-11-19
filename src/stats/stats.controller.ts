@@ -326,19 +326,30 @@ export class StatsController {
 
     return {
       data: data
-        .map(({ weekString, dayString, hourString, _max, _min }) => ({
-          ..._max,
-          min: _min.minScore,
-          weekString,
-          dayString,
-          hourString,
-          date:
-            timelineBy === 'daily'
-              ? dayString
-              : timelineBy === 'weekly'
-                ? weekString
-                : hourString,
-        }))
+        .map(
+          ({
+            weekString,
+            timeIntervalString,
+            dayString,
+            hourString,
+            _max,
+            _min,
+          }) => ({
+            ..._max,
+            min: _min.minScore,
+            weekString,
+            dayString,
+            hourString,
+            date:
+              timelineBy === 'minute'
+                ? timeIntervalString
+                : timelineBy === 'daily'
+                  ? dayString
+                  : timelineBy === 'weekly'
+                    ? weekString
+                    : hourString,
+          }),
+        )
         .sort((a, b) => (a.date < b.date ? -1 : 1)),
       totalCount: data.length,
     };
