@@ -140,7 +140,7 @@ export class JobsService {
     const weekNumber = getWeek(new Date(date));
     const hourNumber = getHours(new Date(date));
     const minuteNumber = getMinutes(new Date(date));
-    const timeIntervalString = `${dayString} ${getTimeIntervalString(new Date(date))}`;
+    const timeIntervalString = `${dayString} ${getTimeIntervalString(new Date(date), 20)}`;
 
     await this.prisma.qubicLIScoreStats.upsert({
       where: {

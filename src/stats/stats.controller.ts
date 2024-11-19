@@ -291,7 +291,8 @@ export class StatsController {
   @Get('qubic-li/stats')
   async getQubicLIScoresStats(
     @Query('range') range: Range = 'ALL',
-    @Query('timelineBy') timelineBy: 'daily' | 'weekly' | 'hourly' = 'weekly',
+    @Query('timelineBy')
+    timelineBy: 'daily' | 'weekly' | 'hourly' | 'minute' = 'weekly',
   ) {
     const data = await this.prisma.qubicLIScoreStats.groupBy({
       by: [
@@ -299,7 +300,9 @@ export class StatsController {
           ? 'dayString'
           : timelineBy === 'weekly'
             ? 'weekString'
-            : 'hourString',
+            : timelineBy === 'hourly'
+              ? 'hourString'
+              : 'timeIntervalString',
       ],
       where:
         range === 'ALL'
@@ -443,12 +446,55 @@ export class StatsController {
     };
   }
 
-  @Post('qubic-li/scores/stats')
+  @Post('qubic-li/stats')
   async updateQubicLIScoresStats() {
     await this.jobs.importQubicLIScoresStats();
 
     return {
-      message: 'Qubic LI scores updated',
+      message: 'Qubic LI scores stats updated',
+    };
+  }
+
+  @Post('qubic-li/scores/stats')
+  async setQubicLIScoresStats() {
+    const data = await this.prisma.qubicLIScoreStats.findMany({
+      orderBy: {
+        date: 'asc',
+      },
+    });
+
+    for (const score of data) {
+      const date = score.date;
+
+      const dayString = format(new Date(date), 'yyyy-MM-dd');
+      const weekString = format(new Date(date), 'yyyy-II');
+      const hourString = format(new Date(date), 'yyyy-MM-dd HH:00');
+
+      const yearNumber = getYear(new Date(date));
+      const weekNumber = getWeek(new Date(date));
+      const hourNumber = getHours(new Date(date));
+      const minuteNumber = getMinutes(new Date(date));
+      const timeIntervalString = `${dayString} ${getTimeIntervalString(new Date(date), 20)}`;
+
+      await this.prisma.qubicLIScoreStats.update({
+        where: {
+          id: score.id,
+        },
+        data: {
+          dayString,
+          weekString,
+          hourString,
+          yearNumber,
+          hourNumber,
+          minuteNumber,
+          weekNumber,
+          timeIntervalString,
+        },
+      });
+    }
+
+    return {
+      totalCount: data.length,
     };
   }
 
