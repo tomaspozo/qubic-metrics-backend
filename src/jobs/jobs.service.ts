@@ -126,20 +126,21 @@ export class JobsService {
     this.logger.debug('Qubic stats sync finished');
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron('*/20 * * * *')
   async importQubicLIScoresStats() {
     const authData = await this.qubicService.getQubicLIToken();
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
     const date = scores.createdAt;
 
-    const dayString = format(new Date(scores.createdAt), 'yyyy-MM-dd');
-    const weekString = format(new Date(scores.createdAt), 'yyyy-II');
-    const hourString = format(new Date(scores.createdAt), 'yyyy-MM-dd HH:00');
+    const dayString = format(new Date(date), 'yyyy-MM-dd');
+    const weekString = format(new Date(date), 'yyyy-II');
+    const hourString = format(new Date(date), 'yyyy-MM-dd HH:00');
 
-    const yearNumber = getYear(new Date(scores.createdAt));
-    const weekNumber = getWeek(new Date(scores.createdAt));
-    const hourNumber = getHours(new Date(scores.createdAt));
-    const minuteNumber = getMinutes(new Date(scores.createdAt));
+    const yearNumber = getYear(new Date(date));
+    const weekNumber = getWeek(new Date(date));
+    const hourNumber = getHours(new Date(date));
+    const minuteNumber = getMinutes(new Date(date));
+    const timeIntervalString = `${dayString} ${getTimeIntervalString(new Date(date))}`;
 
     await this.prisma.qubicLIScoreStats.upsert({
       where: {
@@ -154,6 +155,7 @@ export class JobsService {
         weekNumber,
         hourNumber,
         minuteNumber,
+        timeIntervalString,
         minScore: scores.minScore,
         maxScore: scores.maxScore,
         averageScore: scores.averageScore,
@@ -163,6 +165,7 @@ export class JobsService {
         difficulty: scores.difficulty,
       },
       update: {
+        timeIntervalString,
         minScore: scores.minScore,
         maxScore: scores.maxScore,
         averageScore: scores.averageScore,

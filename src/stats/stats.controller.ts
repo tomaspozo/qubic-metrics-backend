@@ -268,10 +268,6 @@ export class StatsController {
   async getGithubRepositoryStats(
     @Param('repositoryName') repositoryName: string,
   ) {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth() + 1;
-
     const repository = await this.prisma.githubRepository.findFirst({
       where: { name: repositoryName },
     });
@@ -441,6 +437,15 @@ export class StatsController {
   @Post('qubic-li/scores')
   async updateQubicLIScores() {
     await this.jobs.importQubicLIScores();
+
+    return {
+      message: 'Qubic LI scores updated',
+    };
+  }
+
+  @Post('qubic-li/scores/stats')
+  async updateQubicLIScoresStats() {
+    await this.jobs.importQubicLIScoresStats();
 
     return {
       message: 'Qubic LI scores updated',

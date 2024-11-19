@@ -111,6 +111,7 @@ model QubicLIScoreStats {
   weekString                 String   @default("")
   dayString                  String   @default("")
   hourString                 String   @default("")
+  timeIntervalString         String   @default("")
   yearNumber                 Int
   weekNumber                 Int
   hourNumber                 Int
