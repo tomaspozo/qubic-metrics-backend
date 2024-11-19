@@ -144,10 +144,10 @@ export class JobsService {
 
     await this.prisma.qubicLIScoreStats.upsert({
       where: {
-        date,
+        date: timeIntervalString,
       },
       create: {
-        date,
+        date: timeIntervalString,
         dayString,
         weekString,
         hourString,
