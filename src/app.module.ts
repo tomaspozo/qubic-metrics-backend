@@ -17,9 +17,11 @@ import { CoinmarketModule } from './coinmarket/coinmarket.module';
 
 @Module({
   imports: [
-    ...(process.env.NODE_ENV === 'production' ? [ScheduleModule.forRoot()] : []),
+    ...(process.env.NODE_ENV === 'production'
+      ? [ScheduleModule.forRoot()]
+      : []),
     CacheModule.register({
-      ttl: 3600,
+      ttl: 300,
       max: 100,
       isGlobal: true,
     }),
