@@ -294,6 +294,25 @@ export class StatsController {
     @Query('timelineBy')
     timelineBy: 'daily' | 'weekly' | 'hourly' | 'minute' = 'weekly',
   ) {
+    const avgData = await this.prisma.qubicLIScoreStats.aggregate({
+      where:
+        range === 'ALL'
+          ? {}
+          : {
+              date: {
+                in: getDatesInRange(range),
+              },
+            },
+      _avg: {
+        maxScore: true,
+        minScore: true,
+        averageScore: true,
+        solutionsPerHour: true,
+        solutionsPerHourCalculated: true,
+        difficulty: true,
+      },
+    });
+
     const data = await this.prisma.qubicLIScoreStats.groupBy({
       by: [
         timelineBy === 'daily'
@@ -314,13 +333,15 @@ export class StatsController {
             },
       _max: {
         maxScore: true,
+      },
+      _min: {
+        minScore: true,
+      },
+      _avg: {
         averageScore: true,
         solutionsPerHour: true,
         solutionsPerHourCalculated: true,
         difficulty: true,
-      },
-      _min: {
-        minScore: true,
       },
     });
 
@@ -332,14 +353,19 @@ export class StatsController {
             timeIntervalString,
             dayString,
             hourString,
+            _avg,
             _max,
             _min,
           }) => ({
             ..._max,
+            ..._avg,
             min: _min.minScore,
             weekString,
             dayString,
             hourString,
+            allTimeSolutionsPerHourCalculate:
+              avgData._avg.solutionsPerHourCalculated,
+            allTimeSolutionsPerHour: avgData._avg.solutionsPerHour,
             date:
               timelineBy === 'minute'
                 ? timeIntervalString
@@ -352,6 +378,9 @@ export class StatsController {
         )
         .sort((a, b) => (a.date < b.date ? -1 : 1)),
       totalCount: data.length,
+      averages: {
+        ...avgData._avg,
+      },
     };
   }
 
