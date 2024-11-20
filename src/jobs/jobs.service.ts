@@ -126,7 +126,7 @@ export class JobsService {
     this.logger.debug('Qubic stats sync finished');
   }
 
-  @Cron('*/20 * * * *')
+  @Cron('*/5 * * * *')
   async importQubicLIScoresStats() {
     const authData = await this.qubicService.getQubicLIToken();
     const scores = await this.qubicService.getQubicLIScoresWithToken(authData);
@@ -144,10 +144,10 @@ export class JobsService {
 
     await this.prisma.qubicLIScoreStats.upsert({
       where: {
-        date: timeIntervalString,
+        date,
       },
       create: {
-        date: timeIntervalString,
+        date,
         dayString,
         weekString,
         hourString,
