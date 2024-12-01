@@ -294,13 +294,15 @@ export class StatsController {
     @Query('timelineBy')
     timelineBy: 'daily' | 'weekly' | 'hourly' | 'minute' = 'weekly',
   ) {
+    const dates = getDatesInRange(range);
     const avgData = await this.prisma.qubicLIScoreStats.aggregate({
       where:
         range === 'ALL'
           ? {}
           : {
-              date: {
-                in: getDatesInRange(range),
+              createdAt: {
+                gte: new Date(dates[0]),
+                lte: new Date(dates[dates.length - 1]),
               },
             },
       _avg: {
