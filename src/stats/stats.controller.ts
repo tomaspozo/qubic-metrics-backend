@@ -295,16 +295,18 @@ export class StatsController {
     timelineBy: 'daily' | 'weekly' | 'hourly' | 'minute' = 'weekly',
   ) {
     const dates = getDatesInRange(range);
-    const avgData = await this.prisma.qubicLIScoreStats.aggregate({
-      where:
-        range === 'ALL'
-          ? {}
-          : {
-              createdAt: {
-                gte: new Date(dates[0]),
-                lte: new Date(dates[dates.length - 1]),
-              },
+    const where =
+      range === 'ALL'
+        ? {}
+        : {
+            createdAt: {
+              gte: new Date(dates[0]),
+              lte: new Date(dates[dates.length - 1]),
             },
+          };
+
+    const avgData = await this.prisma.qubicLIScoreStats.aggregate({
+      where,
       _avg: {
         maxScore: true,
         minScore: true,
@@ -316,6 +318,7 @@ export class StatsController {
     });
 
     const data = await this.prisma.qubicLIScoreStats.groupBy({
+      where,
       by: [
         timelineBy === 'daily'
           ? 'dayString'
@@ -325,14 +328,6 @@ export class StatsController {
               ? 'hourString'
               : 'timeIntervalString',
       ],
-      where:
-        range === 'ALL'
-          ? {}
-          : {
-              date: {
-                in: getDatesInRange(range),
-              },
-            },
       _max: {
         maxScore: true,
       },
