@@ -1,6 +1,7 @@
 {
   "name": "explorer-extended-backend",
   "version": "0.0.1",
+  "packageManager": "pnpm@9.14.2",
   "description": "",
   "author": "",
   "private": true,
@@ -76,8 +77,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "engines": {
-    "pnpm": "9.14.2"
   }
 }
