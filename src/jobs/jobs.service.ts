@@ -232,7 +232,7 @@ export class JobsService {
     this.logger.debug('Qubic.li scores sync finished');
   }
 
-  @Cron('50 11 * * *')
+  @Cron(CronExpression.EVERY_HOUR)
   async importCryptoData() {
     const symbol = 'BTC';
     const slug = 'bitcoin';
